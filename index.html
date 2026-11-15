@@ -309,6 +309,24 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
   var x0=null;
   lb.addEventListener('touchstart',function(e){x0=e.touches[0].clientX},{passive:true});
   lb.addEventListener('touchend',function(e){if(x0===null)return;var dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>50)show(dx<0?i+1:i-1);x0=null});
+
+  // Měření událostí v GoatCounteru (každá jen jednou za návštěvu stránky)
+  var sent={};
+  function ev(name,title){
+    if(sent[name])return;sent[name]=1;
+    (function go(n){
+      if(window.goatcounter&&window.goatcounter.count){window.goatcounter.count({path:name,title:title,event:true})}
+      else if(n<20){setTimeout(function(){go(n+1)},500)}
+    })(0);
+  }
+  if('IntersectionObserver' in window){
+    var sec={ukazky:['videl-ukazky','Viděl ukázky'],cenik:['videl-cenu','Viděl cenu'],kontakt:['videl-kontakt','Viděl kontakt']};
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){var s=sec[e.target.id];ev(s[0],s[1]);io.unobserve(e.target)}})},{threshold:0.4});
+    Object.keys(sec).forEach(function(id){var el=document.getElementById(id);if(el)io.observe(el)});
+  }
+  document.querySelector('a[href^="tel:"]').addEventListener('click',function(){ev('klik-telefon','Klik na telefon')});
+  m.addEventListener('click',function(){ev('klik-email','Klik na e-mail')});
+  items.forEach(function(b){b.addEventListener('click',function(){ev('otevrel-fotku','Otevřel fotku v galerii')})});
 })();
 </script>
 <script data-goatcounter="https://brunoredl.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
